@@ -1,0 +1,38 @@
+# Vercel ignore file
+# Files and directories to exclude from Vercel deployment
+
+# Hardhat files
+artifacts/
+cache/
+coverage/
+deployments/
+fhevmTemp/
+types/
+node_modules/
+
+# Test files
+test/
+tasks/
+
+# Config files
+hardhat.config.ts
+tsconfig.json
+.eslintrc.yml
+.eslintignore
+.prettierrc.yml
+.prettierignore
+.solhint.json
+.solhintignore
+.solcover.js
+
+# Scripts
+*.ps1
+*.sh
+
+# Documentation
+README.md
+LICENSE
+
+# Video files
+*.mp4
+
