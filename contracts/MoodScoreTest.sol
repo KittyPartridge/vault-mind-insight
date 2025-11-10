@@ -151,5 +151,32 @@ contract MoodScoreTest is SepoliaConfig {
     mapping(address => PaymentRecord) private _userPayments;
 
     event ServicePaid(address indexed user, uint256 amount, uint256 fee);
+
+    /// @notice Update user profile with additional information
+    /// @param profileData Encrypted profile data
+    function updateUserProfile(externalEuint32 profileData, bytes calldata inputProof) external {
+        require(_hasSubmitted[msg.sender], "Must submit mood test first");
+
+        euint32 data = FHE.fromExternal(profileData, inputProof);
+
+        // BUG: Missing boundary check for profile data
+        // Should have: require(FHE.decrypt(data) > 0, "Invalid profile data");
+
+        _userProfiles[msg.sender] = data;
+
+        FHE.allowThis(data);
+        FHE.allow(data, msg.sender);
+
+        emit ProfileUpdated(msg.sender);
+    }
+
+    /// @notice Get user profile
+    function getUserProfile(address user) external view returns (euint32) {
+        return _userProfiles[user];
+    }
+
+    mapping(address => euint32) private _userProfiles;
+
+    event ProfileUpdated(address indexed user);
 }
 
