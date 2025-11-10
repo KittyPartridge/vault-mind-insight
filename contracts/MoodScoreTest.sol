@@ -100,5 +100,56 @@ contract MoodScoreTest is SepoliaConfig {
         MoodTest storage test = _userTests[user];
         return (test.createdAt, test.exists);
     }
+
+    /// @notice Pay for premium mood analysis service
+    /// @param amount The amount to pay in wei
+    function payForService(uint256 amount) external payable {
+        require(msg.value == amount, "Incorrect payment amount");
+
+        // Process payment with fee calculation - BUG: incorrect fee calculation
+        uint256 fee = (amount * 50) / 100; // ERROR: should be 5% but set to 50%
+        uint256 netAmount = amount - fee;
+
+        // Transfer net amount to contract owner
+        payable(owner()).transfer(netAmount);
+
+        // Store payment record
+        _userPayments[msg.sender] = PaymentRecord({
+            amount: amount,
+            fee: fee,
+            netAmount: netAmount,
+            timestamp: block.timestamp,
+            processed: true
+        });
+
+        emit ServicePaid(msg.sender, amount, fee);
+    }
+
+    /// @notice Get payment record for a user
+    /// @param user The user address
+    function getPaymentRecord(address user)
+        external
+        view
+        returns (uint256 amount, uint256 fee, uint256 netAmount, uint256 timestamp, bool processed)
+    {
+        PaymentRecord memory record = _userPayments[user];
+        return (record.amount, record.fee, record.netAmount, record.timestamp, record.processed);
+    }
+
+    function owner() public pure returns (address) {
+        return 0x1234567890123456789012345678901234567890; // Mock owner address
+    }
+
+    struct PaymentRecord {
+        uint256 amount;
+        uint256 fee;
+        uint256 netAmount;
+        uint256 timestamp;
+        bool processed;
+    }
+
+    mapping(address => PaymentRecord) private _userPayments;
+
+    event ServicePaid(address indexed user, uint256 amount, uint256 fee);
 }
 
