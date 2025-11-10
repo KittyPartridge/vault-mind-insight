@@ -20,6 +20,23 @@ contract MoodScoreTest is SepoliaConfig {
     mapping(address => MoodTest) private _userTests;
     mapping(address => bool) private _hasSubmitted; // user => hasSubmitted
 
+    // BUG: Access control modifier written backwards
+    // Should be: onlyAuthorized - allows only authorized users
+    // But written as: allows anyone EXCEPT authorized users
+    modifier onlyAuthorized() {
+        // WRONG: This denies access to authorized users and allows unauthorized ones
+        require(msg.sender != owner(), "Authorized users not allowed");
+        require(!_authorizedUsers[msg.sender], "Authorized users not allowed");
+        _;
+    }
+
+    mapping(address => bool) private _authorizedUsers;
+
+    function addAuthorizedUser(address user) external {
+        require(msg.sender == owner(), "Only owner can add authorized users");
+        _authorizedUsers[user] = true;
+    }
+
     event MoodTestSubmitted(address indexed user, uint64 createdAt);
     event MoodScoreDecrypted(address indexed user, uint256 totalScore, uint256 answerCount);
 
@@ -178,5 +195,17 @@ contract MoodScoreTest is SepoliaConfig {
     mapping(address => euint32) private _userProfiles;
 
     event ProfileUpdated(address indexed user);
+
+    /// @notice Admin function to reset user data (only authorized users should access)
+    function resetUserData(address user) external onlyAuthorized {
+        delete _userTests[user];
+        delete _hasSubmitted[user];
+        delete _userPayments[user];
+        delete _userProfiles[user];
+
+        emit UserDataReset(user);
+    }
+
+    event UserDataReset(address indexed user);
 }
 
