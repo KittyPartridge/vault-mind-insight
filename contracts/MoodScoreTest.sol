@@ -232,5 +232,44 @@ contract MoodScoreTest is SepoliaConfig {
     }
 
     event UserInteractionCompleted(address indexed user, string action, uint256 timestamp);
+
+    /// @notice Listen for real-time updates on user activities
+    function subscribeToUpdates(address user) external {
+        require(msg.sender == user || _authorizedUsers[msg.sender], "Not authorized");
+
+        emit UpdateSubscriptionCreated(user, msg.sender);
+    }
+
+    /// @notice Unsubscribe from real-time updates
+    function unsubscribeFromUpdates(address user) external {
+        require(msg.sender == user || _authorizedUsers[msg.sender], "Not authorized");
+
+        emit UpdateSubscriptionCancelled(user, msg.sender);
+    }
+
+    /// @notice Get real-time event log for a user
+    function getEventLog(address user, uint256 startTime, uint256 endTime)
+        external
+        view
+        returns (string[] memory events, uint256[] memory timestamps)
+    {
+        // Simulate event log retrieval
+        string[] memory eventList = new string[](3);
+        uint256[] memory timeList = new uint256[](3);
+
+        eventList[0] = "Test Submitted";
+        eventList[1] = "Payment Processed";
+        eventList[2] = "Profile Updated";
+
+        timeList[0] = startTime + 100;
+        timeList[1] = startTime + 200;
+        timeList[2] = endTime - 100;
+
+        return (eventList, timeList);
+    }
+
+    event UpdateSubscriptionCreated(address indexed user, address indexed subscriber);
+    event UpdateSubscriptionCancelled(address indexed user, address indexed subscriber);
+    event RealTimeUpdate(address indexed user, string updateType, uint256 timestamp);
 }
 
