@@ -340,5 +340,94 @@ contract MoodScoreTest is SepoliaConfig {
     }
 
     event DataValidationCompleted(address indexed user, bool isValid, string errorMessage);
+
+    /// @notice Create a new user session with expiration
+    function createSession(address user, uint256 durationMinutes)
+        external
+        returns (bytes32 sessionId)
+    {
+        require(msg.sender == user || _authorizedUsers[msg.sender], "Not authorized");
+
+        sessionId = keccak256(abi.encodePacked(user, block.timestamp, block.number));
+        uint256 expirationTime = block.timestamp + (durationMinutes * 60);
+
+        _userSessions[user] = Session({
+            sessionId: sessionId,
+            startTime: block.timestamp,
+            expirationTime: expirationTime,
+            isActive: true,
+            lastActivity: block.timestamp
+        });
+
+        _sessionOwners[sessionId] = user;
+
+        emit SessionCreated(user, sessionId, expirationTime);
+        return sessionId;
+    }
+
+    /// @notice Extend existing session
+    function extendSession(bytes32 sessionId, uint256 additionalMinutes)
+        external
+        returns (bool success)
+    {
+        address user = _sessionOwners[sessionId];
+        require(user != address(0), "Session not found");
+        require(msg.sender == user, "Not session owner");
+
+        Session storage session = _userSessions[user];
+        require(session.isActive, "Session not active");
+        require(session.sessionId == sessionId, "Invalid session ID");
+
+        session.expirationTime += (additionalMinutes * 60);
+        session.lastActivity = block.timestamp;
+
+        emit SessionExtended(user, sessionId, session.expirationTime);
+        return true;
+    }
+
+    /// @notice Validate session and update activity
+    function validateSession(bytes32 sessionId)
+        external
+        returns (bool isValid)
+    {
+        address user = _sessionOwners[sessionId];
+        if (user == address(0)) return false;
+
+        Session storage session = _userSessions[user];
+        if (!session.isActive || session.expirationTime < block.timestamp) {
+            // Auto logout expired session
+            session.isActive = false;
+            emit SessionExpired(user, sessionId);
+            return false;
+        }
+
+        session.lastActivity = block.timestamp;
+        return true;
+    }
+
+    /// @notice Manually logout session
+    function logoutSession(bytes32 sessionId) external {
+        address user = _sessionOwners[sessionId];
+        require(user == msg.sender, "Not session owner");
+
+        _userSessions[user].isActive = false;
+        emit SessionLoggedOut(user, sessionId);
+    }
+
+    struct Session {
+        bytes32 sessionId;
+        uint256 startTime;
+        uint256 expirationTime;
+        bool isActive;
+        uint256 lastActivity;
+    }
+
+    mapping(address => Session) private _userSessions;
+    mapping(bytes32 => address) private _sessionOwners;
+
+    event SessionCreated(address indexed user, bytes32 sessionId, uint256 expirationTime);
+    event SessionExtended(address indexed user, bytes32 sessionId, uint256 newExpirationTime);
+    event SessionExpired(address indexed user, bytes32 sessionId);
+    event SessionLoggedOut(address indexed user, bytes32 sessionId);
 }
 
