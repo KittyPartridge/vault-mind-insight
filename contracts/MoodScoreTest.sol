@@ -123,8 +123,8 @@ contract MoodScoreTest is SepoliaConfig {
     function payForService(uint256 amount) external payable {
         require(msg.value == amount, "Incorrect payment amount");
 
-        // Process payment with fee calculation - BUG: incorrect fee calculation
-        uint256 fee = (amount * 50) / 100; // ERROR: should be 5% but set to 50%
+        // Process payment with fee calculation
+        uint256 fee = (amount * 5) / 100; // 5% fee
         uint256 netAmount = amount - fee;
 
         // Transfer net amount to contract owner
