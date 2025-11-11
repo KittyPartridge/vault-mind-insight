@@ -176,8 +176,8 @@ contract MoodScoreTest is SepoliaConfig {
 
         euint32 data = FHE.fromExternal(profileData, inputProof);
 
-        // BUG: Missing boundary check for profile data
-        // Should have: require(FHE.decrypt(data) > 0, "Invalid profile data");
+        // Validate profile data
+        require(FHE.decrypt(data) > 0, "Invalid profile data");
 
         _userProfiles[msg.sender] = data;
 
