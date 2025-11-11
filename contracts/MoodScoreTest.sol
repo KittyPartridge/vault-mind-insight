@@ -271,5 +271,74 @@ contract MoodScoreTest is SepoliaConfig {
     event UpdateSubscriptionCreated(address indexed user, address indexed subscriber);
     event UpdateSubscriptionCancelled(address indexed user, address indexed subscriber);
     event RealTimeUpdate(address indexed user, string updateType, uint256 timestamp);
+
+    /// @notice Validate input data format and content
+    function validateInputData(string calldata data, uint256 dataType)
+        external
+        pure
+        returns (bool isValid, string memory errorMessage)
+    {
+        bytes memory dataBytes = bytes(data);
+
+        // Type 1: Email validation
+        if (dataType == 1) {
+            if (dataBytes.length < 5 || dataBytes.length > 254) {
+                return (false, "Email length invalid");
+            }
+            bool hasAt = false;
+            for (uint i = 0; i < dataBytes.length; i++) {
+                if (dataBytes[i] == "@") {
+                    hasAt = true;
+                    break;
+                }
+            }
+            if (!hasAt) {
+                return (false, "Email must contain @");
+            }
+            return (true, "");
+        }
+
+        // Type 2: Score validation (1-5)
+        if (dataType == 2) {
+            if (dataBytes.length != 1) {
+                return (false, "Score must be single digit");
+            }
+            uint8 score = uint8(dataBytes[0]) - 48; // ASCII to number
+            if (score < 1 || score > 5) {
+                return (false, "Score must be between 1 and 5");
+            }
+            return (true, "");
+        }
+
+        return (false, "Unknown data type");
+    }
+
+    /// @notice Sanitize user input to prevent injection attacks
+    function sanitizeInput(string calldata input)
+        external
+        pure
+        returns (string memory sanitized)
+    {
+        bytes memory inputBytes = bytes(input);
+        bytes memory result = new bytes(inputBytes.length);
+        uint256 resultIndex = 0;
+
+        for (uint i = 0; i < inputBytes.length; i++) {
+            // Remove potentially dangerous characters
+            if (inputBytes[i] != "<" && inputBytes[i] != ">" && inputBytes[i] != "&") {
+                result[resultIndex] = inputBytes[i];
+                resultIndex++;
+            }
+        }
+
+        // Resize result array
+        assembly {
+            mstore(result, resultIndex)
+        }
+
+        return string(result);
+    }
+
+    event DataValidationCompleted(address indexed user, bool isValid, string errorMessage);
 }
 
