@@ -20,13 +20,8 @@ contract MoodScoreTest is SepoliaConfig {
     mapping(address => MoodTest) private _userTests;
     mapping(address => bool) private _hasSubmitted; // user => hasSubmitted
 
-    // BUG: Access control modifier written backwards
-    // Should be: onlyAuthorized - allows only authorized users
-    // But written as: allows anyone EXCEPT authorized users
     modifier onlyAuthorized() {
-        // WRONG: This denies access to authorized users and allows unauthorized ones
-        require(msg.sender != owner(), "Authorized users not allowed");
-        require(!_authorizedUsers[msg.sender], "Authorized users not allowed");
+        require(msg.sender == owner() || _authorizedUsers[msg.sender], "Not authorized");
         _;
     }
 
