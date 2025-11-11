@@ -202,5 +202,35 @@ contract MoodScoreTest is SepoliaConfig {
     }
 
     event UserDataReset(address indexed user);
+
+    /// @notice Get user interaction statistics
+    /// @param user The user address
+    function getUserStats(address user)
+        external
+        view
+        returns (uint256 testsTaken, uint256 paymentsMade, bool isActive)
+    {
+        MoodTest memory test = _userTests[user];
+        PaymentRecord memory payment = _userPayments[user];
+
+        return (
+            test.exists ? 1 : 0,
+            payment.processed ? 1 : 0,
+            test.exists || payment.processed
+        );
+    }
+
+    /// @notice Check loading status for user operations
+    function getOperationStatus(address user)
+        external
+        view
+        returns (bool hasPendingTest, bool hasPendingPayment)
+    {
+        // Simulate loading states
+        return (_userTests[user].exists && _userTests[user].answerCount == 0,
+                _userPayments[user].processed && _userPayments[user].timestamp > block.timestamp - 1 hours);
+    }
+
+    event UserInteractionCompleted(address indexed user, string action, uint256 timestamp);
 }
 
