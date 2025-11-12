@@ -739,5 +739,152 @@ contract MoodScoreTest is SepoliaConfig {
     }
 
     event DataExported(address indexed user, uint256 format, uint256 dataSize);
+
+    /// @notice Set user preferences
+    function setUserPreferences(
+        address user,
+        string calldata theme,
+        bool notificationsEnabled,
+        string calldata language,
+        uint256 timezoneOffset
+    ) external {
+        require(msg.sender == user || _authorizedUsers[msg.sender], "Not authorized");
+
+        _userPreferences[user] = UserPreferences({
+            theme: theme,
+            notificationsEnabled: notificationsEnabled,
+            language: language,
+            timezoneOffset: timezoneOffset,
+            lastUpdated: block.timestamp
+        });
+
+        emit PreferencesUpdated(user, theme, notificationsEnabled, language);
+    }
+
+    /// @notice Get user preferences
+    function getUserPreferences(address user)
+        external
+        view
+        returns (
+            string memory theme,
+            bool notificationsEnabled,
+            string memory language,
+            uint256 timezoneOffset,
+            uint256 lastUpdated
+        )
+    {
+        UserPreferences memory prefs = _userPreferences[user];
+        return (
+            prefs.theme,
+            prefs.notificationsEnabled,
+            prefs.language,
+            prefs.timezoneOffset,
+            prefs.lastUpdated
+        );
+    }
+
+    /// @notice Set notification preferences for specific events
+    function setNotificationPreferences(
+        address user,
+        bool emailTestReminders,
+        bool smsResults,
+        bool pushUpdates,
+        uint256 quietHoursStart,
+        uint256 quietHoursEnd
+    ) external {
+        require(msg.sender == user, "Can only set own notification preferences");
+
+        _notificationPreferences[user] = NotificationPreferences({
+            emailTestReminders: emailTestReminders,
+            smsResults: smsResults,
+            pushUpdates: pushUpdates,
+            quietHoursStart: quietHoursStart,
+            quietHoursEnd: quietHoursEnd,
+            lastUpdated: block.timestamp
+        });
+
+        emit NotificationPreferencesUpdated(user);
+    }
+
+    /// @notice Get notification preferences
+    function getNotificationPreferences(address user)
+        external
+        view
+        returns (
+            bool emailTestReminders,
+            bool smsResults,
+            bool pushUpdates,
+            uint256 quietHoursStart,
+            uint256 quietHoursEnd
+        )
+    {
+        NotificationPreferences memory prefs = _notificationPreferences[user];
+        return (
+            prefs.emailTestReminders,
+            prefs.smsResults,
+            prefs.pushUpdates,
+            prefs.quietHoursStart,
+            prefs.quietHoursEnd
+        );
+    }
+
+    /// @notice Check if notifications should be sent based on preferences and time
+    function shouldSendNotification(address user, string calldata notificationType)
+        external
+        view
+        returns (bool shouldSend)
+    {
+        NotificationPreferences memory prefs = _notificationPreferences[user];
+        if (!prefs.pushUpdates) return false;
+
+        uint256 currentHour = (block.timestamp / 3600) % 24;
+        if (currentHour >= prefs.quietHoursStart && currentHour <= prefs.quietHoursEnd) {
+            return false; // In quiet hours
+        }
+
+        // Type-specific checks
+        if (keccak256(abi.encodePacked(notificationType)) == keccak256(abi.encodePacked("test_reminder"))) {
+            return prefs.emailTestReminders;
+        }
+        if (keccak256(abi.encodePacked(notificationType)) == keccak256(abi.encodePacked("results"))) {
+            return prefs.smsResults;
+        }
+
+        return prefs.pushUpdates;
+    }
+
+    /// @notice Reset user preferences to defaults
+    function resetPreferences(address user) external {
+        require(msg.sender == user, "Can only reset own preferences");
+
+        delete _userPreferences[user];
+        delete _notificationPreferences[user];
+
+        emit PreferencesReset(user);
+    }
+
+    struct UserPreferences {
+        string theme;
+        bool notificationsEnabled;
+        string language;
+        uint256 timezoneOffset;
+        uint256 lastUpdated;
+    }
+
+    struct NotificationPreferences {
+        bool emailTestReminders;
+        bool smsResults;
+        bool pushUpdates;
+        uint256 quietHoursStart;
+        uint256 quietHoursEnd;
+        uint256 lastUpdated;
+    }
+
+    mapping(address => UserPreferences) private _userPreferences;
+    mapping(address => NotificationPreferences) private _notificationPreferences;
+
+    event PreferencesUpdated(address indexed user, string theme, bool notificationsEnabled, string language);
+    event NotificationPreferencesUpdated(address indexed user);
+    event PreferencesReset(address indexed user);
 }
 
