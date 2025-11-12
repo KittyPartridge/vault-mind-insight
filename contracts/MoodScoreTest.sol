@@ -614,5 +614,130 @@ contract MoodScoreTest is SepoliaConfig {
 
     event CacheWarmedUp(uint256 userCount);
     event QueryOptimized(address indexed user, uint256 fields, uint256 gasSaved);
+
+    /// @notice Export user data in JSON format
+    function exportUserDataJSON(address user)
+        external
+        view
+        returns (string memory jsonData)
+    {
+        MoodTest memory test = _userTests[user];
+        PaymentRecord memory payment = _userPayments[user];
+
+        // Build JSON-like string (simplified for contract limitations)
+        jsonData = string(abi.encodePacked(
+            '{"user":"', _addressToString(user), '",',
+            '"hasTest":', test.exists ? 'true' : 'false', ',',
+            '"testTimestamp":', _uintToString(test.createdAt), ',',
+            '"hasPayment":', payment.processed ? 'true' : 'false', ',',
+            '"paymentAmount":', _uintToString(payment.amount), ',',
+            '"exportTimestamp":', _uintToString(block.timestamp),
+            '}'
+        ));
+
+        return jsonData;
+    }
+
+    /// @notice Export user data in CSV format
+    function exportUserDataCSV(address user)
+        external
+        view
+        returns (string memory csvData)
+    {
+        MoodTest memory test = _userTests[user];
+        PaymentRecord memory payment = _userPayments[user];
+
+        csvData = string(abi.encodePacked(
+            "User,HasTest,TestTimestamp,HasPayment,PaymentAmount,ExportTimestamp\n",
+            _addressToString(user), ",",
+            test.exists ? "true" : "false", ",",
+            _uintToString(test.createdAt), ",",
+            payment.processed ? "true" : "false", ",",
+            _uintToString(payment.amount), ",",
+            _uintToString(block.timestamp), "\n"
+        ));
+
+        return csvData;
+    }
+
+    /// @notice Export bulk data for multiple users
+    function exportBulkData(address[] calldata users, uint256 format)
+        external
+        view
+        returns (bytes memory bulkData)
+    {
+        require(users.length <= 10, "Too many users for bulk export");
+
+        if (format == 1) { // JSON array
+            bytes memory result = '{"users":[';
+            for (uint256 i = 0; i < users.length; i++) {
+                if (i > 0) result = abi.encodePacked(result, ',');
+                result = abi.encodePacked(result, '"', _addressToString(users[i]), '"');
+            }
+            result = abi.encodePacked(result, ']}');
+            return result;
+        } else if (format == 2) { // CSV
+            bytes memory result = "User\n";
+            for (uint256 i = 0; i < users.length; i++) {
+                result = abi.encodePacked(result, _addressToString(users[i]), "\n");
+            }
+            return result;
+        }
+
+        revert("Unsupported format");
+    }
+
+    /// @notice Get supported export formats
+    function getSupportedFormats()
+        external
+        pure
+        returns (string[] memory formats, uint256[] memory formatIds)
+    {
+        formats = new string[](3);
+        formatIds = new uint256[](3);
+
+        formats[0] = "JSON";
+        formats[1] = "CSV";
+        formats[2] = "XML";
+
+        formatIds[0] = 1;
+        formatIds[1] = 2;
+        formatIds[2] = 3;
+
+        return (formats, formatIds);
+    }
+
+    // Helper functions for string conversion
+    function _addressToString(address addr) internal pure returns (string memory) {
+        bytes memory alphabet = "0123456789abcdef";
+        bytes memory data = abi.encodePacked(addr);
+        bytes memory str = new bytes(42);
+        str[0] = "0";
+        str[1] = "x";
+        for (uint i = 0; i < 20; i++) {
+            str[2 + i * 2] = alphabet[uint(uint8(data[i]) >> 4)];
+            str[3 + i * 2] = alphabet[uint(uint8(data[i]) & 0x0f)];
+        }
+        return string(str);
+    }
+
+    function _uintToString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) return "0";
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
+    }
+
+    event DataExported(address indexed user, uint256 format, uint256 dataSize);
 }
 
