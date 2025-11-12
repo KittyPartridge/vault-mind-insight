@@ -886,5 +886,157 @@ contract MoodScoreTest is SepoliaConfig {
     event PreferencesUpdated(address indexed user, string theme, bool notificationsEnabled, string language);
     event NotificationPreferencesUpdated(address indexed user);
     event PreferencesReset(address indexed user);
+
+    /// @notice Standardized API response format
+    function getStandardizedResponse(
+        address user,
+        uint256 requestId,
+        uint256 responseType
+    )
+        external
+        view
+        returns (
+            uint256 statusCode,
+            string memory message,
+            bytes memory data,
+            uint256 timestamp,
+            bytes32 requestHash
+        )
+    {
+        requestHash = keccak256(abi.encodePacked(user, requestId, responseType, block.timestamp));
+
+        if (responseType == 1) { // User profile response
+            MoodTest memory test = _userTests[user];
+            data = abi.encode(test.exists, test.createdAt);
+            statusCode = test.exists ? 200 : 404;
+            message = test.exists ? "Profile found" : "Profile not found";
+        } else if (responseType == 2) { // Payment status response
+            PaymentRecord memory payment = _userPayments[user];
+            data = abi.encode(payment.processed, payment.amount);
+            statusCode = payment.processed ? 200 : 402;
+            message = payment.processed ? "Payment completed" : "Payment required";
+        } else if (responseType == 3) { // Session status response
+            Session memory session = _userSessions[user];
+            data = abi.encode(session.isActive, session.expirationTime);
+            statusCode = session.isActive ? 200 : 401;
+            message = session.isActive ? "Session active" : "Session expired";
+        } else {
+            statusCode = 400;
+            message = "Invalid response type";
+            data = "";
+        }
+
+        return (statusCode, message, data, block.timestamp, requestHash);
+    }
+
+    /// @notice Format error responses consistently
+    function formatErrorResponse(
+        uint256 errorCode,
+        string calldata errorMessage,
+        bytes calldata errorDetails
+    )
+        external
+        pure
+        returns (
+            uint256 statusCode,
+            string memory message,
+            bytes memory data,
+            uint256 timestamp
+        )
+    {
+        if (errorCode == 1001) {
+            statusCode = 401;
+            message = "Unauthorized access";
+        } else if (errorCode == 1002) {
+            statusCode = 403;
+            message = "Forbidden operation";
+        } else if (errorCode == 1003) {
+            statusCode = 404;
+            message = "Resource not found";
+        } else if (errorCode == 1004) {
+            statusCode = 429;
+            message = "Rate limit exceeded";
+        } else {
+            statusCode = 500;
+            message = "Internal server error";
+        }
+
+        data = abi.encode(errorCode, errorMessage, errorDetails);
+        timestamp = block.timestamp;
+
+        return (statusCode, message, data, timestamp);
+    }
+
+    /// @notice Get API version and supported endpoints
+    function getApiInfo()
+        external
+        pure
+        returns (
+            string memory version,
+            string[] memory endpoints,
+            string[] memory methods
+        )
+    {
+        version = "1.0.0";
+
+        endpoints = new string[](5);
+        endpoints[0] = "/user/profile";
+        endpoints[1] = "/user/payment";
+        endpoints[2] = "/user/session";
+        endpoints[3] = "/export/data";
+        endpoints[4] = "/preferences";
+
+        methods = new string[](5);
+        methods[0] = "GET";
+        methods[1] = "GET";
+        methods[2] = "GET";
+        methods[3] = "POST";
+        methods[4] = "PUT";
+
+        return (version, endpoints, methods);
+    }
+
+    /// @notice Validate API request format
+    function validateApiRequest(
+        string calldata endpoint,
+        string calldata method,
+        bytes calldata body
+    )
+        external
+        pure
+        returns (bool isValid, string memory errorMessage)
+    {
+        bytes memory endpointBytes = bytes(endpoint);
+        bytes memory methodBytes = bytes(method);
+
+        // Validate endpoint format
+        if (endpointBytes.length == 0 || endpointBytes[0] != "/") {
+            return (false, "Invalid endpoint format");
+        }
+
+        // Validate method
+        if (
+            keccak256(methodBytes) != keccak256("GET") &&
+            keccak256(methodBytes) != keccak256("POST") &&
+            keccak256(methodBytes) != keccak256("PUT") &&
+            keccak256(methodBytes) != keccak256("DELETE")
+        ) {
+            return (false, "Unsupported HTTP method");
+        }
+
+        // Validate body size for POST/PUT
+        if (
+            (keccak256(methodBytes) == keccak256("POST") ||
+             keccak256(methodBytes) == keccak256("PUT")) &&
+            body.length > 10000
+        ) {
+            return (false, "Request body too large");
+        }
+
+        return (true, "");
+    }
+
+    event ApiResponseFormatted(address indexed user, uint256 requestId, uint256 statusCode);
+    event ApiErrorFormatted(uint256 errorCode, string errorMessage);
 }
 
