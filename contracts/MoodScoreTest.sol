@@ -429,5 +429,96 @@ contract MoodScoreTest is SepoliaConfig {
     event SessionExtended(address indexed user, bytes32 sessionId, uint256 newExpirationTime);
     event SessionExpired(address indexed user, bytes32 sessionId);
     event SessionLoggedOut(address indexed user, bytes32 sessionId);
+
+    /// @notice Handle network errors with retry mechanism
+    function retryFailedOperation(
+        address user,
+        bytes32 operationId,
+        uint256 maxRetries
+    ) external returns (bool success, uint256 attempts) {
+        require(msg.sender == user || _authorizedUsers[msg.sender], "Not authorized");
+
+        FailedOperation storage op = _failedOperations[operationId];
+        require(op.user == user, "Operation not found");
+        require(!op.resolved, "Operation already resolved");
+
+        attempts = op.retryCount + 1;
+        if (attempts > maxRetries) {
+            emit OperationFailedPermanently(user, operationId, "Max retries exceeded");
+            return (false, attempts);
+        }
+
+        op.retryCount = attempts;
+        op.lastRetryTime = block.timestamp;
+
+        // Simulate retry logic - in real implementation, this would retry the actual operation
+        bool operationSuccess = (block.timestamp % 2 == 0); // Simulate random success/failure
+
+        if (operationSuccess) {
+            op.resolved = true;
+            emit OperationRetrySuccessful(user, operationId, attempts);
+            return (true, attempts);
+        } else {
+            emit OperationRetryFailed(user, operationId, attempts);
+            return (false, attempts);
+        }
+    }
+
+    /// @notice Report a failed operation for retry handling
+    function reportFailedOperation(
+        address user,
+        string calldata operationType,
+        string calldata errorMessage
+    ) external returns (bytes32 operationId) {
+        require(msg.sender == user, "Can only report own operations");
+
+        operationId = keccak256(abi.encodePacked(user, operationType, block.timestamp));
+
+        _failedOperations[operationId] = FailedOperation({
+            user: user,
+            operationType: operationType,
+            errorMessage: errorMessage,
+            retryCount: 0,
+            lastRetryTime: 0,
+            resolved: false,
+            createdAt: block.timestamp
+        });
+
+        emit OperationFailed(user, operationId, operationType, errorMessage);
+        return operationId;
+    }
+
+    /// @notice Get operation error details
+    function getOperationError(bytes32 operationId)
+        external
+        view
+        returns (
+            address user,
+            string memory operationType,
+            string memory errorMessage,
+            uint256 retryCount,
+            bool resolved
+        )
+    {
+        FailedOperation memory op = _failedOperations[operationId];
+        return (op.user, op.operationType, op.errorMessage, op.retryCount, op.resolved);
+    }
+
+    struct FailedOperation {
+        address user;
+        string operationType;
+        string errorMessage;
+        uint256 retryCount;
+        uint256 lastRetryTime;
+        bool resolved;
+        uint256 createdAt;
+    }
+
+    mapping(bytes32 => FailedOperation) private _failedOperations;
+
+    event OperationFailed(address indexed user, bytes32 operationId, string operationType, string errorMessage);
+    event OperationRetryFailed(address indexed user, bytes32 operationId, uint256 attempts);
+    event OperationRetrySuccessful(address indexed user, bytes32 operationId, uint256 attempts);
+    event OperationFailedPermanently(address indexed user, bytes32 operationId, string reason);
 }
 
