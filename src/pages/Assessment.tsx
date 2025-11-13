@@ -105,6 +105,11 @@ export default function Assessment() {
   };
 
   const question = assessmentQuestions[currentQuestion];
+  
+  if (!question) {
+    return null;
+  }
+  
   const isAnswered = answers[question.id] !== undefined;
 
   return (
