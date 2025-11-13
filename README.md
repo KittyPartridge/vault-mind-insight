@@ -22,7 +22,52 @@ Connect your wallet and experience end-to-end encrypted mood assessment!
 
 ## 📹 Demo Video
 
-Watch the full demonstration: [Demo Video](https://github.com/KittyPartridge/vault-mind-insight/blob/main/vault-mind-insight.mp4)
+### Complete Feature Demonstration
+Watch our comprehensive video walkthrough showcasing Vault Mind Insight's full functionality:
+
+🎬 **[Full Demo Video](https://github.com/KittyPartridge/vault-mind-insight/blob/main/vault-mind-insight.mp4)** (4.3MB)
+
+### Video Chapters
+
+| Time | Section | Description |
+|------|---------|-------------|
+| 0:00 - 0:45 | Introduction | Platform overview and privacy features |
+| 0:45 - 2:15 | Wallet Connection | Rainbow wallet integration and setup |
+| 2:15 - 4:30 | Mood Assessment | Taking the encrypted mood questionnaire |
+| 4:30 - 6:00 | Result Decryption | Viewing decrypted assessment results |
+| 6:00 - 7:30 | Data Export | Exporting data in multiple formats |
+| 7:30 - 9:00 | Settings & Preferences | Customizing user experience |
+| 9:00 - 10:30 | Mobile Experience | Touch interactions and responsive design |
+| 10:30 - 12:00 | Security Features | Encryption and privacy demonstrations |
+
+### Key Highlights in the Video
+
+- **🔐 End-to-End Encryption**: See how answers are encrypted before submission
+- **📱 Mobile Optimization**: Experience touch gestures and responsive layouts
+- **⚡ Real-time Processing**: Watch on-chain encrypted computation
+- **🔓 Selective Decryption**: Learn how users control their own data access
+- **📊 Data Portability**: Explore export options for personal records
+- **🎨 UI/UX Flow**: Complete user journey from signup to results
+
+### Quick Feature Previews
+
+#### Privacy-Preserving Assessment
+![Assessment Preview](https://img.shields.io/badge/Privacy-FHE--Encrypted-blue)
+- Encrypted input submission
+- Zero-knowledge computation
+- User-controlled decryption
+
+#### Professional Dashboard
+![Dashboard Preview](https://img.shields.io/badge/Dashboard-Responsive-green)
+- Real-time data visualization
+- Export functionality
+- Settings management
+
+#### Mobile-First Design
+![Mobile Preview](https://img.shields.io/badge/Mobile-Touch--Optimized-purple)
+- Gesture-based navigation
+- Responsive breakpoints
+- Optimized loading
 
 ## ✨ Features
 
