@@ -1,12 +1,55 @@
-import { Lock, Shield, Users } from "lucide-react";
+import { Lock, Shield, Users, Wallet } from "lucide-react";
 import { Button } from "./ui/button";
 import { Logo } from "./Logo";
+import { useState } from "react";
+import { useToast } from "./ui/use-toast";
 
 export const Hero = () => {
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const { toast } = useToast();
+
+  const handleConnectWallet = () => {
+    // Simulate wallet connection
+    setIsWalletConnected(true);
+    toast({
+      title: "Wallet Connected",
+      description: "Rainbow Wallet successfully connected.",
+    });
+  };
+
+  const handleLearnMore = () => {
+    const howItWorksSection = document.getElementById("how-it-works");
+    howItWorksSection?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleStartAssessment = () => {
+    window.location.href = "/assessment";
+  };
+
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 py-20">
       <div className="absolute top-8 left-8">
         <Logo />
+      </div>
+
+      <div className="absolute top-8 right-8">
+        {isWalletConnected ? (
+          <Button
+            variant="outline"
+            className="border-mint text-foreground bg-mint-light/50 hover:bg-mint-light"
+          >
+            <Wallet className="w-4 h-4 mr-2" />
+            Connected
+          </Button>
+        ) : (
+          <Button
+            onClick={handleConnectWallet}
+            className="bg-gradient-to-r from-lavender to-soft-blue text-white hover:opacity-90"
+          >
+            <Wallet className="w-4 h-4 mr-2" />
+            Connect Wallet
+          </Button>
+        )}
       </div>
 
       <div className="text-center max-w-4xl mx-auto space-y-8 animate-fade-in">
@@ -30,6 +73,7 @@ export const Hero = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
           <Button
             size="lg"
+            onClick={handleStartAssessment}
             className="bg-gradient-to-r from-lavender to-soft-blue text-white hover:opacity-90 transition-all px-8 py-6 text-lg rounded-2xl shadow-lg hover:shadow-xl"
           >
             Start Your Assessment
@@ -37,6 +81,7 @@ export const Hero = () => {
           <Button
             size="lg"
             variant="outline"
+            onClick={handleLearnMore}
             className="border-lavender text-foreground hover:bg-lavender-light/20 px-8 py-6 text-lg rounded-2xl"
           >
             Learn More

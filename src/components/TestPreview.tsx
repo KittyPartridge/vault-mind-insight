@@ -78,7 +78,10 @@ export const TestPreview = () => {
                   All responses are encrypted end-to-end
                 </span>
               </div>
-              <Button className="bg-gradient-to-r from-lavender to-soft-blue text-white rounded-full">
+              <Button 
+                onClick={() => window.location.href = "/assessment"}
+                className="bg-gradient-to-r from-lavender to-soft-blue text-white rounded-full"
+              >
                 Continue Assessment
               </Button>
             </div>

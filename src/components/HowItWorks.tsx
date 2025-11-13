@@ -33,7 +33,7 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section className="py-24 px-4">
+    <section id="how-it-works" className="py-24 px-4 bg-gradient-to-b from-background via-mint-light/10 to-background">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">

@@ -2,7 +2,6 @@ import { WaveBackground } from "@/components/WaveBackground";
 import { Hero } from "@/components/Hero";
 import { HowItWorks } from "@/components/HowItWorks";
 import { TestPreview } from "@/components/TestPreview";
-import { WalletSection } from "@/components/WalletSection";
 
 const Index = () => {
   return (
@@ -13,7 +12,6 @@ const Index = () => {
         <Hero />
         <HowItWorks />
         <TestPreview />
-        <WalletSection />
       </main>
     </div>
   );
