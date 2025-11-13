@@ -1166,5 +1166,238 @@ contract MoodScoreTest is SepoliaConfig {
     event TestsExecuted(uint256 testsRun, bool authTest, bool paymentTest, bool sessionTest);
     event ValidationTestsExecuted(uint256 testsRun, bool emailTest, bool scoreTest, bool sanitizationTest);
     event FullTestSuiteCompleted(uint256 totalTests, uint256 passedTests, uint256 failedTests);
+
+    /// @notice Detect mobile device and optimize interactions
+    function detectMobileDevice(string calldata userAgent)
+        external
+        pure
+        returns (
+            bool isMobile,
+            bool isTablet,
+            string memory deviceType,
+            string memory recommendedLayout
+        )
+    {
+        bytes memory ua = bytes(userAgent);
+
+        // Simple mobile detection
+        isMobile = _containsString(ua, "Mobile") ||
+                  _containsString(ua, "Android") ||
+                  _containsString(ua, "iPhone");
+
+        isTablet = _containsString(ua, "Tablet") ||
+                  _containsString(ua, "iPad") ||
+                  (_containsString(ua, "Android") && !_containsString(ua, "Mobile"));
+
+        if (isTablet) {
+            deviceType = "tablet";
+            recommendedLayout = "responsive_grid";
+        } else if (isMobile) {
+            deviceType = "mobile";
+            recommendedLayout = "single_column_touch";
+        } else {
+            deviceType = "desktop";
+            recommendedLayout = "multi_column";
+        }
+
+        return (isMobile, isTablet, deviceType, recommendedLayout);
+    }
+
+    /// @notice Optimize touch interactions for mobile
+    function getTouchOptimizations(string calldata deviceType)
+        external
+        pure
+        returns (
+            uint256 minTouchTargetSize,
+            uint256 gestureThreshold,
+            bool hapticFeedback,
+            string memory interactionStyle
+        )
+    {
+        if (keccak256(abi.encodePacked(deviceType)) == keccak256(abi.encodePacked("mobile"))) {
+            minTouchTargetSize = 44; // 44px minimum
+            gestureThreshold = 10; // pixels
+            hapticFeedback = true;
+            interactionStyle = "touch_optimized";
+        } else if (keccak256(abi.encodePacked(deviceType)) == keccak256(abi.encodePacked("tablet"))) {
+            minTouchTargetSize = 48; // slightly larger for tablets
+            gestureThreshold = 15;
+            hapticFeedback = true;
+            interactionStyle = "hybrid_touch";
+        } else {
+            minTouchTargetSize = 32; // smaller for mouse
+            gestureThreshold = 0; // no gesture threshold for mouse
+            hapticFeedback = false;
+            interactionStyle = "mouse_optimized";
+        }
+
+        return (minTouchTargetSize, gestureThreshold, hapticFeedback, interactionStyle);
+    }
+
+    /// @notice Get responsive breakpoints for different screen sizes
+    function getResponsiveBreakpoints()
+        external
+        pure
+        returns (
+            uint256[] memory breakpoints,
+            string[] memory breakpointNames,
+            string[] memory layoutStrategies
+        )
+    {
+        breakpoints = new uint256[](4);
+        breakpointNames = new string[](4);
+        layoutStrategies = new string[](4);
+
+        breakpoints[0] = 320; // Mobile S
+        breakpoints[1] = 768; // Tablet
+        breakpoints[2] = 1024; // Desktop
+        breakpoints[3] = 1440; // Desktop L
+
+        breakpointNames[0] = "mobile_small";
+        breakpointNames[1] = "tablet";
+        breakpointNames[2] = "desktop";
+        breakpointNames[3] = "desktop_large";
+
+        layoutStrategies[0] = "single_column_stacked";
+        layoutStrategies[1] = "two_column_flexible";
+        layoutStrategies[2] = "three_column_sidebar";
+        layoutStrategies[3] = "four_column_dashboard";
+
+        return (breakpoints, breakpointNames, layoutStrategies);
+    }
+
+    /// @notice Optimize content loading for mobile networks
+    function optimizeMobileLoading(uint256 connectionSpeed, uint256 screenSize)
+        external
+        pure
+        returns (
+            uint256 maxItemsPerPage,
+            bool lazyLoadImages,
+            bool compressContent,
+            string memory loadingStrategy
+        )
+    {
+        // Connection speed: 1=slow, 2=medium, 3=fast
+        if (connectionSpeed == 1) { // Slow connection
+            maxItemsPerPage = 5;
+            lazyLoadImages = true;
+            compressContent = true;
+            loadingStrategy = "progressive_minimal";
+        } else if (connectionSpeed == 2) { // Medium connection
+            maxItemsPerPage = 10;
+            lazyLoadImages = true;
+            compressContent = screenSize < 768; // Compress only on small screens
+            loadingStrategy = "balanced_progressive";
+        } else { // Fast connection
+            maxItemsPerPage = 20;
+            lazyLoadImages = false;
+            compressContent = false;
+            loadingStrategy = "full_load";
+        }
+
+        return (maxItemsPerPage, lazyLoadImages, compressContent, loadingStrategy);
+    }
+
+    /// @notice Handle touch gestures for mobile interactions
+    function processTouchGesture(
+        string calldata gestureType,
+        uint256 startX,
+        uint256 startY,
+        uint256 endX,
+        uint256 endY,
+        uint256 duration
+    )
+        external
+        pure
+        returns (
+            string memory recognizedGesture,
+            uint256 distance,
+            uint256 angle,
+            bool isValidGesture
+        )
+    {
+        // Calculate distance
+        uint256 deltaX = endX > startX ? endX - startX : startX - endX;
+        uint256 deltaY = endY > startY ? endY - startY : startY - endY;
+        distance = _sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Calculate angle (simplified)
+        if (deltaX == 0) {
+            angle = deltaY > 0 ? 90 : 270;
+        } else {
+            angle = _atan2(int256(deltaY), int256(deltaX)) * 180 / 31415; // Rough conversion to degrees
+        }
+
+        // Recognize gesture
+        if (keccak256(abi.encodePacked(gestureType)) == keccak256(abi.encodePacked("swipe"))) {
+            if (distance > 50) {
+                if (angle > 315 || angle <= 45) recognizedGesture = "swipe_right";
+                else if (angle > 45 && angle <= 135) recognizedGesture = "swipe_up";
+                else if (angle > 135 && angle <= 225) recognizedGesture = "swipe_left";
+                else recognizedGesture = "swipe_down";
+                isValidGesture = true;
+            } else {
+                recognizedGesture = "tap";
+                isValidGesture = distance < 10;
+            }
+        } else {
+            recognizedGesture = "unknown";
+            isValidGesture = false;
+        }
+
+        return (recognizedGesture, distance, angle, isValidGesture);
+    }
+
+    // Helper functions
+    function _containsString(bytes memory haystack, string memory needle)
+        internal
+        pure
+        returns (bool)
+    {
+        return keccak256(haystack) == keccak256(abi.encodePacked(needle)) ||
+               _indexOf(haystack, bytes(needle)) != -1;
+    }
+
+    function _indexOf(bytes memory haystack, bytes memory needle)
+        internal
+        pure
+        returns (int256)
+    {
+        if (needle.length == 0) return 0;
+        if (haystack.length < needle.length) return -1;
+
+        for (uint i = 0; i <= haystack.length - needle.length; i++) {
+            bool found = true;
+            for (uint j = 0; j < needle.length; j++) {
+                if (haystack[i + j] != needle[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) return int256(i);
+        }
+        return -1;
+    }
+
+    function _sqrt(uint256 x) internal pure returns (uint256) {
+        if (x == 0) return 0;
+        uint256 z = (x + 1) / 2;
+        uint256 y = x;
+        while (z < y) {
+            y = z;
+            z = (x / z + z) / 2;
+        }
+        return y;
+    }
+
+    function _atan2(int256 y, int256 x) internal pure returns (int256) {
+        // Simplified atan2 implementation
+        if (x > 0) return y >= 0 ? 1 : -1; // 45 degrees approx
+        if (x < 0) return y >= 0 ? 2 : -2; // 135 degrees approx
+        return 0;
+    }
+
+    event MobileOptimizationApplied(string deviceType, string strategy);
+    event TouchGestureProcessed(string gestureType, bool isValid);
 }
 
