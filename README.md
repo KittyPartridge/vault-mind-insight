@@ -1,6 +1,18 @@
 # Vault Mind Insight - Encrypted Mood Score Test
 
-A privacy-preserving mood health index questionnaire built with FHEVM. Users can submit encrypted mood scores (1-5) for psychological assessment. Individual answers remain private, and only users or authorized therapists can decrypt the results.
+A comprehensive privacy-preserving mood health index questionnaire platform built with FHEVM (Fully Homomorphic Encryption Virtual Machine). Users can submit encrypted mood scores (1-5) for psychological assessment while maintaining complete privacy. Individual answers remain encrypted on-chain, and only users or authorized healthcare professionals can decrypt and access the results.
+
+## 🎯 Overview
+
+Vault Mind Insight revolutionizes mental health assessment by combining blockchain technology with cutting-edge cryptographic privacy. The platform enables confidential mood tracking and psychological evaluation without compromising user privacy.
+
+### Key Benefits
+
+- **🔒 Absolute Privacy**: FHE encryption ensures answers remain private until explicitly decrypted
+- **🏥 Professional Assessment**: Authorized therapists can access decrypted results for proper care
+- **📊 Longitudinal Tracking**: Track mood patterns over time with encrypted historical data
+- **🔐 Self-Sovereign**: Users maintain full control over their mental health data
+- **⚡ Real-time Processing**: On-chain computation without exposing sensitive information
 
 ## 🚀 Live Demo
 
@@ -12,13 +24,25 @@ Connect your wallet and experience end-to-end encrypted mood assessment!
 
 Watch the full demonstration: [Demo Video](https://github.com/KittyPartridge/vault-mind-insight/blob/main/vault-mind-insight.mp4)
 
-## Features
+## ✨ Features
 
-- **FHE Encryption**: All mood scores are encrypted using Fully Homomorphic Encryption
-- **Privacy-Preserving**: Individual answers remain private until decryption
-- **On-Chain Storage**: Encrypted scores are stored on-chain without decryption
-- **User Control**: Only users can decrypt their own results
-- **Rainbow Wallet Integration**: Connect using Rainbow wallet plugin
+### Core Functionality
+- **🔐 FHE Encryption**: All mood scores encrypted using fhEVM's advanced cryptographic primitives
+- **🛡️ Privacy-Preserving**: Individual answers remain private until authorized decryption
+- **⛓️ On-Chain Storage**: Encrypted scores stored immutably on blockchain
+- **👤 User Sovereignty**: Users control decryption of their own mental health data
+- **🏥 Professional Access**: Authorized healthcare providers can access decrypted results
+- **📱 Multi-Device Support**: Responsive design optimized for mobile and desktop
+- **🎨 Customizable UI**: Dark/light themes and personalized user preferences
+
+### Advanced Features
+- **📊 Data Export**: Export mood data in JSON, CSV, and XML formats
+- **🔔 Smart Notifications**: Configurable alerts based on mood patterns
+- **🔄 Session Management**: Automatic session handling with security timeouts
+- **🧪 Built-in Testing**: Comprehensive unit test suite for reliability
+- **📈 Performance Optimization**: Indexed queries and caching for fast responses
+- **🌐 API Integration**: RESTful API for third-party integrations
+- **🎯 Touch Optimization**: Mobile-first touch interactions and gestures
 
 ## Quick Start
 
@@ -357,6 +381,208 @@ struct MoodTest {
 2. **Take Assessment**: Navigate to assessment page and answer 10 questions (1-5 scale)
 3. **Submit**: Answers are encrypted and submitted to the contract
 4. **Decrypt Results**: Click "Decrypt Results" to view your mood score
+
+## 🔌 API Documentation
+
+### Authentication Endpoints
+
+#### POST `/auth/login`
+Authenticate user with encrypted credentials.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "encrypted_password",
+  "signature": "eip712_signature"
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "message": "Login successful",
+  "data": {
+    "token": "jwt_token",
+    "user": {
+      "id": "0x...",
+      "email": "user@example.com",
+      "role": "user"
+    }
+  },
+  "timestamp": 1640995200,
+  "requestHash": "0x..."
+}
+```
+
+#### POST `/auth/logout`
+End user session.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "message": "Logout successful",
+  "data": null,
+  "timestamp": 1640995200
+}
+```
+
+### Assessment Endpoints
+
+#### POST `/assessment/submit`
+Submit encrypted mood assessment.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "encryptedTotalScore": "fhe_handle",
+  "encryptedAnswerCount": "fhe_handle",
+  "inputProof": "proof_data",
+  "answers": ["encrypted_answer_1", "encrypted_answer_2", ...]
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "message": "Assessment submitted successfully",
+  "data": {
+    "assessmentId": "0x...",
+    "submissionTimestamp": 1640995200
+  },
+  "timestamp": 1640995200
+}
+```
+
+#### GET `/assessment/results/:userId`
+Get decrypted assessment results.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "message": "Results retrieved successfully",
+  "data": {
+    "totalScore": 32,
+    "answerCount": 10,
+    "averageScore": 3.2,
+    "submissionDate": "2023-12-31T23:59:59Z",
+    "riskLevel": "moderate"
+  },
+  "timestamp": 1640995200
+}
+```
+
+### Data Export Endpoints
+
+#### GET `/export/json/:userId`
+Export user data in JSON format.
+
+**Query Parameters:**
+- `startDate`: ISO date string
+- `endDate`: ISO date string
+- `includeMetadata`: boolean
+
+**Response:**
+```json
+{
+  "user": "0x742d35cc6...",
+  "hasTest": true,
+  "testTimestamp": 1640995200,
+  "hasPayment": true,
+  "paymentAmount": "1000000000000000000",
+  "exportTimestamp": 1640995200
+}
+```
+
+#### GET `/export/csv/:userId`
+Export user data in CSV format.
+
+**Response Headers:**
+```
+Content-Type: text/csv
+Content-Disposition: attachment; filename="user_data.csv"
+```
+
+### Preferences Endpoints
+
+#### PUT `/preferences/:userId`
+Update user preferences.
+
+**Request Body:**
+```json
+{
+  "theme": "dark",
+  "notificationsEnabled": true,
+  "language": "en",
+  "timezoneOffset": -8,
+  "quietHoursStart": 22,
+  "quietHoursEnd": 8
+}
+```
+
+#### GET `/preferences/:userId`
+Get user preferences.
+
+**Response:**
+```json
+{
+  "theme": "dark",
+  "notificationsEnabled": true,
+  "language": "en",
+  "timezoneOffset": -8,
+  "lastUpdated": 1640995200
+}
+```
+
+### Error Response Format
+
+All API endpoints return standardized error responses:
+
+```json
+{
+  "statusCode": 400,
+  "message": "Invalid request format",
+  "data": {
+    "errorCode": 1001,
+    "errorMessage": "Email format invalid",
+    "errorDetails": "Expected format: user@domain.com"
+  },
+  "timestamp": 1640995200
+}
+```
+
+### Rate Limiting
+
+- **Authenticated requests**: 1000 per hour
+- **Assessment submissions**: 10 per day
+- **Data exports**: 50 per hour
+
+Rate limit headers are included in all responses:
+```
+X-RateLimit-Limit: 1000
+X-RateLimit-Remaining: 999
+X-RateLimit-Reset: 1640998800
+```
 
 ## Testing
 
