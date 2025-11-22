@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Soft pastel color palette */
+    --background: 270 30% 98%;
+    --foreground: 280 15% 25%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 280 15% 25%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 280 15% 25%;
+
+    /* Lavender primary */
+    --primary: 280 50% 70%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Mint secondary */
+    --secondary: 150 40% 85%;
+    --secondary-foreground: 280 15% 25%;
+
+    /* Peachy muted */
+    --muted: 20 60% 90%;
+    --muted-foreground: 280 15% 45%;
+
+    /* Soft blue accent */
+    --accent: 200 45% 85%;
+    --accent-foreground: 280 15% 25%;
+
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 280 20% 90%;
+    --input: 280 20% 92%;
+    --ring: 280 50% 70%;
+
+    --radius: 1rem;
+
+    /* Custom MindVault colors */
+    --lavender: 280 50% 70%;
+    --lavender-light: 280 40% 90%;
+    --mint: 150 40% 75%;
+    --mint-light: 150 30% 90%;
+    --peach: 20 70% 80%;
+    --peach-light: 20 60% 92%;
+    --soft-blue: 200 45% 75%;
+    --soft-blue-light: 200 35% 90%;
+
+    /* Gradients */
+    --gradient-wave: linear-gradient(135deg, hsl(var(--lavender-light)), hsl(var(--mint-light)), hsl(var(--peach-light)));
+    --gradient-secure: linear-gradient(135deg, hsl(var(--lavender)), hsl(var(--soft-blue)));
+
+    /* Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --wave-animation: wave 8s ease-in-out infinite;
+  }
+
+  .dark {
+    --background: 280 20% 10%;
+    --foreground: 270 10% 95%;
+
+    --card: 280 20% 12%;
+    --card-foreground: 270 10% 95%;
+
+    --popover: 280 20% 12%;
+    --popover-foreground: 270 10% 95%;
+
+    --primary: 280 50% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 150 30% 30%;
+    --secondary-foreground: 270 10% 95%;
+
+    --muted: 280 20% 20%;
+    --muted-foreground: 270 10% 70%;
+
+    --accent: 200 40% 35%;
+    --accent-foreground: 270 10% 95%;
+
+    --destructive: 0 60% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 280 20% 20%;
+    --input: 280 20% 18%;
+    --ring: 280 50% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
