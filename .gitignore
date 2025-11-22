@@ -45,8 +45,5 @@ fhevmTemp/
 private-keys/
 secrets/
 
-# Video files
-*.mp4
-
 # Temporary files
 *.local
