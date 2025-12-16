@@ -33,13 +33,24 @@ const steps = [
 
 export const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="py-24 px-4 bg-gradient-to-b from-background via-mint-light/10 to-background">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+    <section id="how-it-works" className="py-24 px-4 bg-gradient-to-b from-background via-mint-light/10 to-background relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-lavender/10 rounded-full blur-2xl animate-float-slow" />
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-mint/10 rounded-full blur-2xl animate-float-slow" style={{ animationDelay: "2s" }} />
+      <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-peach/10 rounded-full blur-xl animate-drift" />
+      
+      {/* Connection line */}
+      <div className="absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-lavender/20 to-transparent hidden lg:block" style={{ transform: "translateY(-50%)" }} />
+      
+      <div className="max-w-6xl mx-auto relative">
+        <div className="text-center mb-16">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-mint-light/50 text-sm font-medium text-foreground border border-mint/20 mb-4 animate-bounce-in">
+            Simple & Secure
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 animate-fade-in">
             How MindVault Works
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.2s" }}>
             A simple, secure process that puts your privacy first
           </p>
         </div>
@@ -48,21 +59,26 @@ export const HowItWorks = () => {
           {steps.map((step, index) => (
             <div
               key={index}
-              className="relative flex flex-col items-center text-center p-8 rounded-2xl bg-card border border-border hover:shadow-xl transition-all group"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="relative flex flex-col items-center text-center p-8 rounded-2xl bg-card border border-border hover:shadow-2xl transition-all duration-500 group hover:-translate-y-3 hover:border-lavender/30"
+              style={{ animationDelay: `${index * 0.15}s` }}
             >
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-lavender to-soft-blue flex items-center justify-center text-white font-bold text-sm">
+              {/* Step number with glow */}
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-lavender to-soft-blue flex items-center justify-center text-white font-bold text-sm shadow-lg group-hover:scale-110 transition-transform duration-300">
                 {index + 1}
               </div>
 
+              {/* Icon container with animation */}
               <div
-                className={`p-4 rounded-full mb-4 bg-${step.color}-light group-hover:scale-110 transition-transform`}
+                className={`p-4 rounded-full mb-4 bg-${step.color}-light group-hover:scale-110 transition-all duration-300 group-hover:shadow-lg`}
               >
                 <step.icon className={`w-8 h-8 text-${step.color}`} />
               </div>
 
-              <h3 className="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
+              <h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-lavender transition-colors duration-300">{step.title}</h3>
               <p className="text-muted-foreground">{step.description}</p>
+              
+              {/* Hover glow effect */}
+              <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-${step.color}/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
             </div>
           ))}
         </div>

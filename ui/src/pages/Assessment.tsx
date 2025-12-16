@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Shield, Lock, CheckCircle2, ArrowLeft, Wallet, Eye } from "lucide-react";
+import { Shield, Lock, CheckCircle2, ArrowLeft, Wallet, Eye, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -9,6 +9,8 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useChainId } from "wagmi";
 import { useMoodScoreTest } from "@/hooks/useMoodScoreTest";
 import { getContractAddress } from "@/config/contract";
+import { FloatingParticles } from "@/components/FloatingParticles";
+import { DecorativeBlobs } from "@/components/DecorativeBlobs";
 
 const assessmentQuestions = [
   {
@@ -77,6 +79,8 @@ export default function Assessment() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [moodScore, setMoodScore] = useState<{ totalScore: number; answerCount: number; averageScore: number } | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right">("left");
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -105,8 +109,11 @@ export default function Assessment() {
     }));
 
     if (currentQuestion < assessmentQuestions.length - 1) {
+      setSlideDirection("left");
+      setIsTransitioning(true);
       setTimeout(() => {
         setCurrentQuestion((prev) => prev + 1);
+        setIsTransitioning(false);
       }, 300);
     }
   };
@@ -215,7 +222,12 @@ export default function Assessment() {
 
   const handleBack = () => {
     if (currentQuestion > 0) {
-      setCurrentQuestion((prev) => prev - 1);
+      setSlideDirection("right");
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentQuestion((prev) => prev - 1);
+        setIsTransitioning(false);
+      }, 300);
     }
   };
 
@@ -231,50 +243,53 @@ export default function Assessment() {
   // Show results view if submitted
   if (showResults || hasSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background via-lavender-light/10 to-background">
-        <div className="absolute top-8 left-8">
+      <div className="min-h-screen bg-gradient-to-b from-background via-lavender-light/10 to-background relative overflow-hidden">
+        <DecorativeBlobs />
+        <FloatingParticles />
+        
+        <div className="absolute top-8 left-8 z-20">
           <Logo />
         </div>
 
-        <div className="absolute top-8 right-8">
+        <div className="absolute top-8 right-8 z-20">
           <ConnectButton />
         </div>
 
-        <div className="max-w-3xl mx-auto px-4 pt-32 pb-16">
-          <Card className="p-8 md:p-12 backdrop-blur-sm bg-card/80 border-lavender/20 shadow-2xl">
+        <div className="max-w-3xl mx-auto px-4 pt-32 pb-16 relative z-10">
+          <Card className="p-8 md:p-12 backdrop-blur-sm bg-card/80 border-lavender/20 shadow-2xl animate-scale-in">
             <div className="space-y-8 text-center">
-              <div className="inline-flex items-center gap-2 bg-mint-light/50 px-4 py-2 rounded-full border border-mint/30">
+              <div className="inline-flex items-center gap-2 bg-mint-light/50 px-4 py-2 rounded-full border border-mint/30 animate-bounce-in">
                 <Shield className="w-4 h-4 text-mint" />
                 <span className="text-sm font-medium text-foreground">
                   Assessment Submitted
                 </span>
               </div>
 
-              <h2 className="text-3xl font-bold text-foreground">
+              <h2 className="text-3xl font-bold text-foreground animate-fade-in">
                 Your Mood Score Results
               </h2>
 
               {moodScore ? (
-                <div className="space-y-4">
-                  <div className="text-6xl font-bold text-lavender">
+                <div className="space-y-4 animate-scale-in">
+                  <div className="text-6xl font-bold text-shimmer">
                     {moodScore.averageScore.toFixed(2)}
                   </div>
                   <div className="text-muted-foreground">
                     Average Score out of 5.00
                   </div>
                   <div className="grid grid-cols-2 gap-4 mt-8">
-                    <Card className="p-4">
+                    <Card className="p-4 hover:shadow-lg transition-shadow duration-300 hover:-translate-y-1">
                       <div className="text-sm text-muted-foreground">Total Score</div>
-                      <div className="text-2xl font-bold">{moodScore.totalScore}</div>
+                      <div className="text-2xl font-bold text-lavender">{moodScore.totalScore}</div>
                     </Card>
-                    <Card className="p-4">
+                    <Card className="p-4 hover:shadow-lg transition-shadow duration-300 hover:-translate-y-1">
                       <div className="text-sm text-muted-foreground">Questions Answered</div>
-                      <div className="text-2xl font-bold">{moodScore.answerCount}</div>
+                      <div className="text-2xl font-bold text-mint">{moodScore.answerCount}</div>
                     </Card>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 animate-fade-in">
                   <p className="text-muted-foreground">
                     Your assessment has been encrypted and stored on-chain. Click below to decrypt and view your results.
                   </p>
@@ -291,7 +306,7 @@ export default function Assessment() {
                         handleDecrypt();
                       }}
                       disabled={isLoading || !isConnected || !contractAddress}
-                      className="bg-gradient-to-r from-lavender to-soft-blue text-white hover:opacity-90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-gradient-to-r from-lavender to-soft-blue text-white hover:opacity-90 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform duration-300 pulse-glow"
                     >
                       <Eye className="w-5 h-5 mr-2" />
                       {isLoading ? "Decrypting..." : "Decrypt Results"}
@@ -308,7 +323,7 @@ export default function Assessment() {
               )}
 
               {message && (
-                <div className="p-4 rounded-xl bg-mint-light/20 border border-mint/30">
+                <div className="p-4 rounded-xl bg-mint-light/20 border border-mint/30 animate-fade-in">
                   <p className="text-sm text-foreground">{message}</p>
                 </div>
               )}
@@ -316,7 +331,7 @@ export default function Assessment() {
               <Button
                 onClick={() => window.location.href = "/"}
                 variant="outline"
-                className="border-lavender text-foreground hover:bg-lavender-light/20"
+                className="border-lavender text-foreground hover:bg-lavender-light/20 hover:scale-105 transition-all duration-300"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Home
@@ -329,63 +344,80 @@ export default function Assessment() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-lavender-light/10 to-background">
-      <div className="absolute top-8 left-8">
+    <div className="min-h-screen bg-gradient-to-b from-background via-lavender-light/10 to-background relative overflow-hidden">
+      <DecorativeBlobs />
+      <FloatingParticles />
+      
+      <div className="absolute top-8 left-8 z-20">
         <Logo />
       </div>
 
-      <div className="absolute top-8 right-8">
+      <div className="absolute top-8 right-8 z-20">
         <ConnectButton />
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 pt-32 pb-16">
-        <div className="mb-8 space-y-4 animate-fade-in">
+      <div className="max-w-3xl mx-auto px-4 pt-32 pb-16 relative z-10">
+        <div className="mb-8 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-2 bg-mint-light/50 px-4 py-2 rounded-full border border-mint/30">
+            <div className="inline-flex items-center gap-2 bg-mint-light/50 px-4 py-2 rounded-full border border-mint/30 animate-bounce-in">
               <Shield className="w-4 h-4 text-mint" />
               <span className="text-sm font-medium text-foreground">
                 Encrypted Assessment
               </span>
             </div>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground animate-fade-in">
               Question {currentQuestion + 1} of {assessmentQuestions.length}
             </span>
           </div>
 
-          <Progress value={progress} className="h-2" />
+          <div className="relative">
+            <Progress value={progress} className="h-2" />
+            {/* Progress glow effect */}
+            <div 
+              className="absolute top-0 h-2 bg-gradient-to-r from-lavender to-soft-blue rounded-full blur-sm opacity-50 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
 
-        <Card className="p-8 md:p-12 backdrop-blur-sm bg-card/80 border-lavender/20 shadow-2xl animate-fade-in">
+        <Card className={`p-8 md:p-12 backdrop-blur-sm bg-card/80 border-lavender/20 shadow-2xl transition-all duration-300 ${
+          isTransitioning 
+            ? slideDirection === "left" 
+              ? "opacity-0 translate-x-8" 
+              : "opacity-0 -translate-x-8"
+            : "opacity-100 translate-x-0"
+        }`}>
           <div className="space-y-8">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-lavender to-soft-blue flex items-center justify-center text-white font-bold text-lg">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-lavender to-soft-blue flex items-center justify-center text-white font-bold text-lg shadow-lg animate-scale-in">
                 {question.id}
               </div>
               <div className="flex-grow">
-                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2 animate-fade-in">
                   {question.question}
                 </h2>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: "0.1s" }}>
                   <Lock className="w-4 h-4 text-lavender" />
                   <span>Your response will be encrypted</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-3 pt-4">
-              {question.options.map((option) => (
+            <div className="space-y-3 pt-4 stagger-children">
+              {question.options.map((option, index) => (
                 <Button
                   key={option}
                   onClick={() => handleAnswer(option)}
                   variant={answers[question.id] === option ? "default" : "outline"}
-                  className={`w-full justify-start text-left h-auto py-4 px-6 text-base transition-all ${
+                  className={`w-full justify-start text-left h-auto py-4 px-6 text-base transition-all duration-300 ${
                     answers[question.id] === option
-                      ? "bg-gradient-to-r from-lavender to-soft-blue text-white border-none shadow-lg"
-                      : "hover:bg-lavender-light/20 hover:border-lavender"
+                      ? "bg-gradient-to-r from-lavender to-soft-blue text-white border-none shadow-lg scale-[1.02]"
+                      : "hover:bg-lavender-light/20 hover:border-lavender hover:scale-[1.01] hover:shadow-md"
                   }`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {answers[question.id] === option && (
-                    <CheckCircle2 className="w-5 h-5 mr-3 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 mr-3 flex-shrink-0 animate-scale-in" />
                   )}
                   {option}
                 </Button>
@@ -397,7 +429,7 @@ export default function Assessment() {
                 onClick={handleBack}
                 disabled={currentQuestion === 0}
                 variant="outline"
-                className="border-lavender text-foreground hover:bg-lavender-light/20"
+                className="border-lavender text-foreground hover:bg-lavender-light/20 hover:scale-105 transition-all duration-300 disabled:opacity-50"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Previous
@@ -407,15 +439,16 @@ export default function Assessment() {
                 <Button
                   onClick={handleSubmit}
                   disabled={isLoading || !isConnected}
-                  className="flex-grow bg-gradient-to-r from-lavender to-soft-blue text-white hover:opacity-90 shadow-lg"
+                  className="flex-grow bg-gradient-to-r from-lavender to-soft-blue text-white hover:opacity-90 shadow-lg hover:scale-[1.02] transition-all duration-300 pulse-glow"
                 >
+                  <Sparkles className="w-4 h-4 mr-2" />
                   {isLoading ? "Submitting..." : "Submit Assessment"}
                 </Button>
               )}
             </div>
 
             {!isConnected && (
-              <div className="flex items-center gap-2 p-4 rounded-xl bg-yellow-500/20 border border-yellow-500/30">
+              <div className="flex items-center gap-2 p-4 rounded-xl bg-yellow-500/20 border border-yellow-500/30 animate-fade-in">
                 <Wallet className="w-5 h-5 text-yellow-600 flex-shrink-0" />
                 <p className="text-sm text-foreground">
                   Please connect your wallet to submit the assessment.
@@ -423,7 +456,7 @@ export default function Assessment() {
               </div>
             )}
 
-            <div className="flex items-center gap-2 p-4 rounded-xl bg-mint-light/20 border border-mint/30">
+            <div className="flex items-center gap-2 p-4 rounded-xl bg-mint-light/20 border border-mint/30 animate-fade-in">
               <Shield className="w-5 h-5 text-mint flex-shrink-0" />
               <p className="text-sm text-foreground">
                 All your responses are being encrypted end-to-end. Only you can decrypt and view your results using your wallet.
@@ -431,6 +464,22 @@ export default function Assessment() {
             </div>
           </div>
         </Card>
+        
+        {/* Question indicators */}
+        <div className="flex justify-center gap-2 mt-8">
+          {assessmentQuestions.map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentQuestion
+                  ? "w-6 bg-gradient-to-r from-lavender to-soft-blue"
+                  : index < currentQuestion || answers[assessmentQuestions[index].id]
+                  ? "bg-lavender/60"
+                  : "bg-border"
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
